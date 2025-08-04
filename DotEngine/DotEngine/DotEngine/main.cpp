@@ -4,9 +4,11 @@
 #include "Game.h"
 #include "DotRenderer.h"
 
+#include <iostream>
 
 int main(int argc, char* args[])
 {
+
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		return 1;
@@ -78,7 +80,7 @@ int main(int argc, char* args[])
 			}
 		}
 
-		renderer->SetDrawColor(0x00, 0x00, 0x00, 0xFF); 
+		renderer->SetDrawColor(0x2F, 0x2F, 0x2F, 0xFF);
 		renderer->Clear();
 
 		game->Update(deltaTime);

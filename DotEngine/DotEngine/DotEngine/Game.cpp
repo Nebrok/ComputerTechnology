@@ -5,10 +5,11 @@
 #include "glm/glm.hpp"
 #include <algorithm>
 
+#include "QuadTree.h"
 
 std::vector<Dot*> dots;
 
-const int DotAmount = 500;
+const int DotAmount = 1000;
 
 Game::Game(DotRenderer* aRenderer)
 {
@@ -27,69 +28,105 @@ Game::Game(DotRenderer* aRenderer)
 		dots.push_back(d);
 	}
 
-	//To debug collision
-	dots[0]->overriden = true;
-	dots[0]->Radius = 10;
-	//To debug collision
+	glm::vec2 quadTreeCentre = glm::vec2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	TheTree = new QuadTree(quadTreeCentre, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+
 }
 
 void Game::Update(float aDeltaTime)
 {
+	//Rebuild the Quad Tree
+	for (Dot* d : dots)
+	{
+		bool result = TheTree->Insert(d);
+		int foo = 5;
+	}
+
+	std::vector<Dot*> toDestroy;
+
+	for (Dot* d1 : dots)
+	{
+		AABB searchArea = AABB(d1->Position, 100, 100);
+		std::vector<Dot*> surrounding;
+		TheTree->ContainedBy(searchArea, surrounding);
+		if (surrounding.size() == 0)
+			continue;
+
+		for (Dot* d2 : surrounding)
+		{
+			if (d1 != d2)// && d1 != nullptr && d2 != nullptr)
+			{
+				float dist = glm::distance(d1->Position, d2->Position);
+				float minDist = d1->Radius + d2->Radius;
+
+				if (dist < minDist)
+				{
+					glm::vec2 normal = glm::normalize(d2->Position - d1->Position);
+
+					d1->Velocity = glm::reflect(d1->Velocity, normal);
+					d2->Velocity = glm::reflect(d2->Velocity, -normal);
+
+					float overlap1 = 1.5f * ((minDist + 1) - dist);
+					float overlap2 = 1.5f * (minDist - dist);
+					d1->Position -= normal * overlap1;
+					d2->Position += normal * overlap2;
+					d1->TakeDamage(1);
+					//d2->TakeDamage(1);
+					d1->Radius++;
+					//d2->Radius++;
+				}
+				if (d1->Health <= 0)
+				{
+					toDestroy.push_back(d1);
+				}
+			}
+		}
+
+	}
+
+
+	/*
 	std::vector<Dot*> toDestroy;
 	for (Dot* d1 : dots)
 	{
 		for (Dot* d2 : dots)
 		{
-			if (d1 != d2 && d1 != nullptr && d2 != nullptr)
+			if (d1 != d2)// && d1 != nullptr && d2 != nullptr)
 			{
-				float dist = glm::distance(d1->position, d2->position);
+				float dist = glm::distance(d1->Position, d2->Position);
 				float minDist = d1->Radius + d2->Radius;
 
 				if (dist < minDist)
 				{
-					glm::vec2 normal = glm::normalize(d2->position - d1->position);
+					glm::vec2 normal = glm::normalize(d2->Position - d1->Position);
 
-					d1->velocity = glm::reflect(d1->velocity, normal);
-					d2->velocity = glm::reflect(d2->velocity, -normal);
+					d1->Velocity = glm::reflect(d1->Velocity, normal);
+					d2->Velocity = glm::reflect(d2->Velocity, -normal);
 
 					float overlap1 = 1.5f * ((minDist + 1) - dist);
 					float overlap2 = 1.5f * (minDist - dist);
-					d1->position -= normal * overlap1;
-					d2->position += normal * overlap2;
+					d1->Position -= normal * overlap1;
+					d2->Position += normal * overlap2;
 					d1->TakeDamage(1);
+					//d2->TakeDamage(1);
 					d1->Radius++;
+					//d2->Radius++;
 				}
-				if (d1->health <= 0)
+				if (d1->Health <= 0)
 				{
 					toDestroy.push_back(d1);
 				}
 			}
 		}
 	}
-
-	std::vector<int> indexesToRemove;
+	*/
 
 	for (Dot* d : toDestroy)
 	{
-		for (size_t i = 0; i < dots.size(); i++)
-		{
-			if (std::find(indexesToRemove.begin(), indexesToRemove.end(), i) != indexesToRemove.end())
-			{
-				continue;
-			}
-			else if (dots[i] == d)
-			{
-				indexesToRemove.push_back(i);
-			}
-		}
+		d->Reset({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 3);
 	}
 
-	for (int i : indexesToRemove)
-	{
-		dots[i] = nullptr;
-		Dot* newDot = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 3);
-		dots.push_back(newDot);
-	}
+	toDestroy.clear();
 
 	for (Dot* d : dots)
 	{
@@ -98,6 +135,9 @@ void Game::Update(float aDeltaTime)
 			d->Render(renderer, aDeltaTime);
 		}
 	}
+
+	TheTree->ClearTree();
+
 }
 
 void Game::CleanUp()

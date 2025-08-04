@@ -10,16 +10,18 @@ public:
 	Dot(glm::vec2 aPosition, float aRadius);
 	void Render(DotRenderer* aRenderer, float dt);
 	void TakeDamage(int someDamage);
+	void Reset(glm::vec2 newPosition, float newRadius);
 
-	glm::vec2 position;
-	glm::vec2 startPos;
-	glm::vec2 velocity;
+	glm::vec2 Position;
+	glm::vec2 StartPos;
+	glm::vec2 Velocity;
 
-	float totalTime = 0;
+	float TotalTime = 0;
 	float Radius = 0;
 
-	int health;
+	int Health;
 
-	bool overriden = false;
+private:
+	bool _overriden = false;
 };
 
