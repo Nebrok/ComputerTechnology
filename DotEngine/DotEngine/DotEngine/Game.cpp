@@ -9,7 +9,7 @@
 
 std::vector<Dot*> dots;
 
-const int DotAmount = 1000;
+const int DotAmount = 2000;
 
 Game::Game(DotRenderer* aRenderer)
 {
@@ -81,45 +81,7 @@ void Game::Update(float aDeltaTime)
 				}
 			}
 		}
-
 	}
-
-
-	/*
-	std::vector<Dot*> toDestroy;
-	for (Dot* d1 : dots)
-	{
-		for (Dot* d2 : dots)
-		{
-			if (d1 != d2)// && d1 != nullptr && d2 != nullptr)
-			{
-				float dist = glm::distance(d1->Position, d2->Position);
-				float minDist = d1->Radius + d2->Radius;
-
-				if (dist < minDist)
-				{
-					glm::vec2 normal = glm::normalize(d2->Position - d1->Position);
-
-					d1->Velocity = glm::reflect(d1->Velocity, normal);
-					d2->Velocity = glm::reflect(d2->Velocity, -normal);
-
-					float overlap1 = 1.5f * ((minDist + 1) - dist);
-					float overlap2 = 1.5f * (minDist - dist);
-					d1->Position -= normal * overlap1;
-					d2->Position += normal * overlap2;
-					d1->TakeDamage(1);
-					//d2->TakeDamage(1);
-					d1->Radius++;
-					//d2->Radius++;
-				}
-				if (d1->Health <= 0)
-				{
-					toDestroy.push_back(d1);
-				}
-			}
-		}
-	}
-	*/
 
 	for (Dot* d : toDestroy)
 	{
@@ -142,5 +104,9 @@ void Game::Update(float aDeltaTime)
 
 void Game::CleanUp()
 {
-
+	for (Dot* d : dots)
+	{
+		delete d;
+	}
+	delete TheTree;
 }

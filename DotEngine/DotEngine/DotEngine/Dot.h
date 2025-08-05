@@ -8,6 +8,8 @@ class Dot
 public:
 
 	Dot(glm::vec2 aPosition, float aRadius);
+
+	void Update(float dt);
 	void Render(DotRenderer* aRenderer, float dt);
 	void TakeDamage(int someDamage);
 	void Reset(glm::vec2 newPosition, float newRadius);

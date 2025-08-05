@@ -6,8 +6,13 @@
 
 #include <iostream>
 
+#ifdef _DEBUG
+#define new new (_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
+
 int main(int argc, char* args[])
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -105,6 +110,8 @@ int main(int argc, char* args[])
 		renderer->Present();
 	}
 
+
+	game->CleanUp();
 	delete game;
 	delete renderer;
 	TTF_CloseFont(font);

@@ -4,7 +4,6 @@
 
 class Dot;
 
-
 struct AABB
 {
 public:
@@ -23,17 +22,17 @@ public:
 	~AABB();
 
 	bool Contains(glm::vec2 point);
-	bool Intersects(AABB other);
+	bool Intersects(AABB& other);
 };
 
 
 class QuadTree
 {
 public:
-	AABB* Boundry;
+	AABB Boundry;
 
 private:
-	int _capacity = 4;
+	int _capacity = 8;
 	int _level = 0;
 
 	std::vector<Dot*> _items;
@@ -49,7 +48,7 @@ public:
 
 	bool Insert(Dot* object);
 	bool Subdivide();
-	void ContainedBy(AABB searhArea, std::vector<Dot*>& foundItems);
+	void ContainedBy(AABB& searchArea, std::vector<Dot*>& foundItems);
 
 
 	void ClearTree();

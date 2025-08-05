@@ -1,6 +1,8 @@
 #include "QuadTree.h"
 #include "Dot.h"
 
+//-------------AABB-----------------
+
 AABB::AABB()
 	: Centre({0,0}), Width(0), Height(0)
 {
@@ -24,15 +26,19 @@ bool AABB::Contains(glm::vec2 point)
 	return not (point.x > TopRight.x or point.x < TopLeft.x or point.y > BottomRight.y or point.y < TopLeft.y);
 }
 
-bool AABB::Intersects(AABB other)
+bool AABB::Intersects(AABB& other)
 {
 	return not (other.TopLeft.x > TopRight.x or other.TopRight.x < TopLeft.x or other.TopLeft.y > BottomRight.y or other.BottomRight.y < TopLeft.y);
 }
 
+
+//-------------QuadTree-------------
+
+
 QuadTree::QuadTree(glm::vec2 centre, float width, float height, int level)
 	: _level(level)
 {
-	Boundry = new AABB(centre, width, height);
+	Boundry = AABB(centre, width, height);
 }
 
 QuadTree::~QuadTree()
@@ -42,7 +48,7 @@ QuadTree::~QuadTree()
 
 bool QuadTree::Insert(Dot* object)
 {
-	if (not Boundry->Contains(object->Position))
+	if (not Boundry.Contains(object->Position))
 		return false;
 
 	if (_items.size() < _capacity and _northWest == nullptr)
@@ -73,13 +79,13 @@ bool QuadTree::Insert(Dot* object)
 
 bool QuadTree::Subdivide()
 {
-	float newWidth = Boundry->Width / 2;
-	float newHeight = Boundry->Height / 2;
+	float newWidth = Boundry.Width / 2;
+	float newHeight = Boundry.Height / 2;
 
-	glm::vec2 centreTopLeft = glm::vec2(Boundry->Centre.x - (newWidth / 2), Boundry->Centre.y - (newHeight / 2));
-	glm::vec2 centreTopRight = glm::vec2(Boundry->Centre.x + (newWidth / 2), Boundry->Centre.y - (newHeight / 2));
-	glm::vec2 centreBottomLeft = glm::vec2(Boundry->Centre.x - (newWidth / 2), Boundry->Centre.y + (newHeight / 2));
-	glm::vec2 centreBottomRight = glm::vec2(Boundry->Centre.x + (newWidth / 2), Boundry->Centre.y + (newHeight / 2));
+	glm::vec2 centreTopLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y - (newHeight / 2));
+	glm::vec2 centreTopRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y - (newHeight / 2));
+	glm::vec2 centreBottomLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
+	glm::vec2 centreBottomRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
 
 	_northWest = new QuadTree(centreTopLeft, newWidth, newHeight, _level++);
 	_northEast = new QuadTree(centreTopRight, newWidth, newHeight, _level++);
@@ -101,9 +107,9 @@ bool QuadTree::Subdivide()
 	return true;
 }
 
-void QuadTree::ContainedBy(AABB searchArea, std::vector<Dot*>& foundItems)
+void QuadTree::ContainedBy(AABB& searchArea, std::vector<Dot*>& foundItems)
 {
-	if (!Boundry->Intersects(searchArea))
+	if (!Boundry.Intersects(searchArea))
 		return;
 
 	for (Dot* d : _items)
@@ -128,25 +134,28 @@ void QuadTree::ClearTree()
 	if (_northWest != nullptr)
 	{
 		_northWest->~QuadTree();
+		delete _northWest;
 		_northWest = nullptr;
 	}
 
-	if (_northWest != nullptr)
+	if (_northEast != nullptr)
 	{
 		_northEast->~QuadTree();
+		delete _northEast;
 		_northEast = nullptr;
 	}
 
-
-	if (_northWest != nullptr)
+	if (_southWest != nullptr)
 	{
 		_southWest->~QuadTree();
+		delete _southWest;
 		_southWest = nullptr;
 	}
 
-	if (_northWest != nullptr)
+	if (_southEast != nullptr)
 	{
 		_southEast->~QuadTree();
+		delete _southEast;
 		_southEast = nullptr;
 	}
 

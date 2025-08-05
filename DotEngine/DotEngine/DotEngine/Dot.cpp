@@ -28,6 +28,10 @@ void Dot::Reset(glm::vec2 newPosition, float newRadius)
 	Health = 3;
 }
 
+void Dot::Update(float dt)
+{
+
+}
 
 void Dot::Render(DotRenderer* aRenderer, float dt)
 {
@@ -35,7 +39,6 @@ void Dot::Render(DotRenderer* aRenderer, float dt)
 
 	Position += Velocity * DotVelocity * dt;
 
-	
 	float redColor = (glm::cos((TotalTime + StartPos.x) * 0.1f) * 0.5f + 0.5f) * 255.0f;
 	float greenColor = (glm::cos((TotalTime + StartPos.y) * 0.9f) * 0.5f + 0.5f) * 255.0f;
 	float blueColor = (glm::cos(TotalTime * 0.4f) * 0.5f + 0.5f) * 255.0f;
@@ -43,6 +46,9 @@ void Dot::Render(DotRenderer* aRenderer, float dt)
 	aRenderer->SetDrawColor(redColor, greenColor, blueColor, 255);
 	aRenderer->DrawFilledCircle(Position.x, Position.y, Radius);
 
+
+
+	//Wall Collision Checks - why here?
 	if (Position.x - Radius < 0.0f)
 	{
 		Position.x = Radius;
