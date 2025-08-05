@@ -3,6 +3,7 @@
 #include "glm/glm.hpp"
 
 class Dot;
+class DotRenderer;
 
 struct AABB
 {
@@ -21,10 +22,15 @@ public:
 	AABB(glm::vec2 centre, float width, float height);
 	~AABB();
 
+	glm::vec2 GetTopLeft();
+	glm::vec2 GetTopRight();
+	glm::vec2 GetBottomLeft();
+	glm::vec2 GetBottomRight();
+
+
 	bool Contains(glm::vec2 point);
 	bool Intersects(AABB& other);
 };
-
 
 class QuadTree
 {
@@ -32,8 +38,10 @@ public:
 	AABB Boundry;
 
 private:
-	int _capacity = 8;
+	int _capacity = 16;
 	int _level = 0;
+	//not implemented yet
+	int _depthLimit = 10;
 
 	std::vector<Dot*> _items;
 
@@ -50,6 +58,7 @@ public:
 	bool Subdivide();
 	void ContainedBy(AABB& searchArea, std::vector<Dot*>& foundItems);
 
+	void DrawBoundries(DotRenderer* dotRenderer);
 
 	void ClearTree();
 

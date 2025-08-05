@@ -17,7 +17,8 @@ public:
     void Present();
 
     void DrawCircle(int centerX, int centerY, int radius);
-    void DrawFilledCircle(int centerX, int centerY, int radius);
+    void DrawFilledCircle(int centerX, int centerY, int radius, float totalTime);
+    bool DrawLine(float startX, float startY, float endX, float endY);
     void RenderTexture(SDL_Texture* texture, const SDL_FRect* srcRect, const SDL_FRect* dstRect);
 
 private:

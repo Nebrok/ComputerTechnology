@@ -3,6 +3,10 @@
 #include <SDL3/SDL.h>
 #include <cmath> 
 
+#include "glm/glm.hpp"
+#include "game.h"
+
+
 DotRenderer::DotRenderer(SDL_Window* window) : m_sdlRenderer(nullptr)
 {
 	m_sdlRenderer = SDL_CreateRenderer(window, nullptr);
@@ -82,15 +86,27 @@ void DotRenderer::DrawCircle(int centerX, int centerY, int radius)
 	}
 }
 
-void DotRenderer::DrawFilledCircle(int centerX, int centerY, int radius)
+void DotRenderer::DrawFilledCircle(int centerX, int centerY, int radius, float totalTime)
 {
 	if (!m_sdlRenderer) return;
+
+	float redColor = (glm::cos((totalTime) * 0.1f + (centerX / SCREEN_WIDTH)) * 0.5f + 0.5f) * 255.0f;
+	float greenColor = (glm::cos((totalTime) * 0.9f + (centerY / SCREEN_HEIGHT)) * 0.5f + 0.5f) * 255.0f;
+	float blueColor = (glm::cos(totalTime * 0.4f) * 0.5f + 0.5f) * 255.0f;
+
+	SetDrawColor(redColor, greenColor, blueColor, 255);
 
 	for (int y = -radius; y <= radius; y++) 
 	{
 		int x = static_cast<int>(std::sqrt(radius * radius - y * y));
 		SDL_RenderLine(m_sdlRenderer, centerX - x, centerY + y, centerX + x, centerY + y);
 	}
+}
+
+bool DotRenderer::DrawLine(float startX, float startY, float endX, float endY)
+{
+	if (!m_sdlRenderer) return false;
+	return SDL_RenderLine(m_sdlRenderer, startX, startY, endX, endY);
 }
 
 void DotRenderer::RenderTexture(SDL_Texture* texture, const SDL_FRect* srcRect, const SDL_FRect* dstRect)

@@ -1,5 +1,6 @@
 #include "QuadTree.h"
 #include "Dot.h"
+#include "DotRenderer.h"
 
 //-------------AABB-----------------
 
@@ -21,6 +22,26 @@ AABB::~AABB()
 {
 }
 
+glm::vec2 AABB::GetTopLeft()
+{
+	return glm::vec2(Centre.x - (Width / 2), Centre.y - (Height / 2));
+}
+
+glm::vec2 AABB::GetTopRight()
+{
+	return glm::vec2(Centre.x + (Width / 2), Centre.y - (Height / 2));
+}
+
+glm::vec2 AABB::GetBottomLeft()
+{
+	return glm::vec2(Centre.x - (Width / 2), Centre.y + (Height / 2));
+}
+
+glm::vec2 AABB::GetBottomRight()
+{
+	return glm::vec2(Centre.x + (Width / 2), Centre.y + (Height / 2));
+}
+
 bool AABB::Contains(glm::vec2 point)
 {
 	return not (point.x > TopRight.x or point.x < TopLeft.x or point.y > BottomRight.y or point.y < TopLeft.y);
@@ -33,7 +54,6 @@ bool AABB::Intersects(AABB& other)
 
 
 //-------------QuadTree-------------
-
 
 QuadTree::QuadTree(glm::vec2 centre, float width, float height, int level)
 	: _level(level)
@@ -127,6 +147,24 @@ void QuadTree::ContainedBy(AABB& searchArea, std::vector<Dot*>& foundItems)
 	_southEast->ContainedBy(searchArea, foundItems);
 
 	return;
+}
+
+void QuadTree::DrawBoundries(DotRenderer* dotRenderer)
+{
+	dotRenderer->SetDrawColor(255, 255, 255, 255);
+
+	if (_northWest != nullptr)
+	{
+		dotRenderer->SetDrawColor(255, 255, 255, 255);
+		dotRenderer->DrawLine(Boundry.Centre.x, Boundry.TopLeft.y, Boundry.Centre.x, Boundry.BottomRight.y);
+		dotRenderer->DrawLine(Boundry.TopLeft.x, Boundry.Centre.y, Boundry.TopRight.x, Boundry.Centre.y);
+
+
+		_northWest->DrawBoundries(dotRenderer);
+		_northEast->DrawBoundries(dotRenderer);
+		_southWest->DrawBoundries(dotRenderer);
+		_southEast->DrawBoundries(dotRenderer);
+	}
 }
 
 void QuadTree::ClearTree()

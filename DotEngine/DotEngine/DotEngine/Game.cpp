@@ -7,10 +7,6 @@
 
 #include "QuadTree.h"
 
-std::vector<Dot*> dots;
-
-const int DotAmount = 2000;
-
 Game::Game(DotRenderer* aRenderer)
 {
 	renderer = aRenderer;
@@ -20,8 +16,8 @@ Game::Game(DotRenderer* aRenderer)
 		int diry = std::rand() % 2;
 		int dirx = std::rand() % 2;
 
-		dirx = -1 ? dirx > 1 : dirx;
-		diry = -1 ? diry > 1 : diry;
+		//dirx = -1 ? dirx > 1 : dirx;
+		//diry = -1 ? diry > 1 : diry;
 
 		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 3);
 
@@ -35,18 +31,22 @@ Game::Game(DotRenderer* aRenderer)
 
 void Game::Update(float aDeltaTime)
 {
+	//int result = sizeof(Dot);
+
+	TotalTime += aDeltaTime;
 	//Rebuild the Quad Tree
 	for (Dot* d : dots)
 	{
 		bool result = TheTree->Insert(d);
 		int foo = 5;
 	}
+	//TheTree->DrawBoundries(renderer);
 
 	std::vector<Dot*> toDestroy;
 
 	for (Dot* d1 : dots)
 	{
-		AABB searchArea = AABB(d1->Position, 100, 100);
+		AABB searchArea = AABB(d1->Position, SearchWidth, SearchWidth);
 		std::vector<Dot*> surrounding;
 		TheTree->ContainedBy(searchArea, surrounding);
 		if (surrounding.size() == 0)
@@ -59,25 +59,28 @@ void Game::Update(float aDeltaTime)
 				float dist = glm::distance(d1->Position, d2->Position);
 				float minDist = d1->Radius + d2->Radius;
 
-				if (dist < minDist)
+				if (dist <= minDist)
 				{
 					glm::vec2 normal = glm::normalize(d2->Position - d1->Position);
 
 					d1->Velocity = glm::reflect(d1->Velocity, normal);
 					d2->Velocity = glm::reflect(d2->Velocity, -normal);
 
-					float overlap1 = 1.5f * ((minDist + 1) - dist);
-					float overlap2 = 1.5f * (minDist - dist);
-					d1->Position -= normal * overlap1;
-					d2->Position += normal * overlap2;
+					float overlap = 1.5f * ((minDist + 1) - dist);
+					d1->Position -= normal * overlap;
+					d2->Position += normal * overlap;
 					d1->TakeDamage(1);
-					//d2->TakeDamage(1);
+					d2->TakeDamage(1);
 					d1->Radius++;
-					//d2->Radius++;
-				}
-				if (d1->Health <= 0)
-				{
-					toDestroy.push_back(d1);
+					d2->Radius++;
+					if (d1->Health <= 0)
+					{
+						toDestroy.push_back(d1);
+					}
+					if (d2->Health <= 0)
+					{
+						toDestroy.push_back(d2);
+					}
 				}
 			}
 		}
@@ -94,10 +97,12 @@ void Game::Update(float aDeltaTime)
 	{
 		if (d != nullptr)
 		{
-			d->Render(renderer, aDeltaTime);
+			d->Update(aDeltaTime);
+			d->Render(renderer, TotalTime);
 		}
 	}
 
+	
 	TheTree->ClearTree();
 
 }

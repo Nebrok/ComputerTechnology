@@ -6,11 +6,19 @@ static const int SCREEN_HEIGHT = 800;
 
 class DotRenderer;
 class QuadTree;
+class Dot;
 
 class Game
 {
 public:
 	QuadTree* TheTree;
+	const int SearchWidth = 20;
+
+	const int DotAmount = 2000;
+
+	std::vector<Dot*> dots;
+
+	float TotalTime = 0;
 
 	Game(DotRenderer* aRenderer);
 	void Update(float aDeltaTime);
