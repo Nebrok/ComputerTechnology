@@ -13,27 +13,20 @@ Game::Game(DotRenderer* aRenderer)
 
 	for (size_t i = 0; i < DotAmount; i++)
 	{
-		int diry = std::rand() % 2;
-		int dirx = std::rand() % 2;
-
-		//dirx = -1 ? dirx > 1 : dirx;
-		//diry = -1 ? diry > 1 : diry;
-
-		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 3);
+		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 1);
 
 		dots.push_back(d);
 	}
 
 	glm::vec2 quadTreeCentre = glm::vec2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-	TheTree = new QuadTree(quadTreeCentre, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+	TheTree = new QuadTree(quadTreeCentre, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 }
 
 void Game::Update(float aDeltaTime)
 {
-	//int result = sizeof(Dot);
-
 	TotalTime += aDeltaTime;
+
 	//Rebuild the Quad Tree
 	for (Dot* d : dots)
 	{
@@ -71,8 +64,8 @@ void Game::Update(float aDeltaTime)
 					d2->Position += normal * overlap;
 					d1->TakeDamage(1);
 					d2->TakeDamage(1);
-					d1->Radius++;
-					d2->Radius++;
+					d1->Radius += 1;
+					d2->Radius += 1;
 					if (d1->Health <= 0)
 					{
 						toDestroy.push_back(d1);
@@ -88,7 +81,7 @@ void Game::Update(float aDeltaTime)
 
 	for (Dot* d : toDestroy)
 	{
-		d->Reset({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 3);
+		d->Reset({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 1);
 	}
 
 	toDestroy.clear();

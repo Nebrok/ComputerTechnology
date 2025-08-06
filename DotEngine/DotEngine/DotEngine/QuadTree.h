@@ -38,10 +38,8 @@ public:
 	AABB Boundry;
 
 private:
-	int _capacity = 16;
-	int _level = 0;
-	//not implemented yet
-	int _depthLimit = 10;
+	int _capacity = 8;
+	bool _hitLimit = false;
 
 	std::vector<Dot*> _items;
 
@@ -51,7 +49,7 @@ private:
 	QuadTree* _southEast = nullptr;
 
 public:
-	QuadTree(glm::vec2 centre, float width, float height, int level);
+	QuadTree(glm::vec2 centre, float width, float height);
 	~QuadTree();
 
 	bool Insert(Dot* object);
@@ -61,6 +59,8 @@ public:
 	void DrawBoundries(DotRenderer* dotRenderer);
 
 	void ClearTree();
+
+	void SetLimit() { _hitLimit = true; };
 
 };
 

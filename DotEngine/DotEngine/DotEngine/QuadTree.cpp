@@ -44,19 +44,27 @@ glm::vec2 AABB::GetBottomRight()
 
 bool AABB::Contains(glm::vec2 point)
 {
-	return not (point.x > TopRight.x or point.x < TopLeft.x or point.y > BottomRight.y or point.y < TopLeft.y);
+	return (
+		point.x > TopLeft.x and
+		point.x < TopRight.x and
+		point.y < BottomRight.y and
+		point.y > TopRight.y
+		);
 }
 
 bool AABB::Intersects(AABB& other)
 {
-	return not (other.TopLeft.x > TopRight.x or other.TopRight.x < TopLeft.x or other.TopLeft.y > BottomRight.y or other.BottomRight.y < TopLeft.y);
+	return (
+		other.TopLeft.x < TopRight.x and
+		other.TopRight.x > TopLeft.x and
+		other.TopLeft.y < BottomRight.y and
+		other.BottomRight.y > TopLeft.y);
 }
 
 
 //-------------QuadTree-------------
 
-QuadTree::QuadTree(glm::vec2 centre, float width, float height, int level)
-	: _level(level)
+QuadTree::QuadTree(glm::vec2 centre, float width, float height)
 {
 	Boundry = AABB(centre, width, height);
 }
@@ -69,9 +77,11 @@ QuadTree::~QuadTree()
 bool QuadTree::Insert(Dot* object)
 {
 	if (not Boundry.Contains(object->Position))
+	{
 		return false;
+	}
 
-	if (_items.size() < _capacity and _northWest == nullptr)
+	if (_hitLimit or (_items.size() < _capacity and _northWest == nullptr))
 	{
 		_items.push_back(object);
 		return true;
@@ -93,7 +103,6 @@ bool QuadTree::Insert(Dot* object)
 		return true;
 
 	//Shouldn't ever get here but big problem if it does
-
 	return false;
 }
 
@@ -107,10 +116,18 @@ bool QuadTree::Subdivide()
 	glm::vec2 centreBottomLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
 	glm::vec2 centreBottomRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
 
-	_northWest = new QuadTree(centreTopLeft, newWidth, newHeight, _level++);
-	_northEast = new QuadTree(centreTopRight, newWidth, newHeight, _level++);
-	_southWest = new QuadTree(centreBottomLeft, newWidth, newHeight, _level++);
-	_southEast = new QuadTree(centreBottomRight, newWidth, newHeight, _level++);
+	_northWest = new QuadTree(centreTopLeft, newWidth, newHeight);
+	_northEast = new QuadTree(centreTopRight, newWidth, newHeight);
+	_southWest = new QuadTree(centreBottomLeft, newWidth, newHeight);
+	_southEast = new QuadTree(centreBottomRight, newWidth, newHeight);
+	
+	if ((newWidth / 2) < 2 or (newHeight / 2) < 2)
+	{
+		_northWest->SetLimit();
+		_northEast->SetLimit();
+		_southWest->SetLimit();
+		_southEast->SetLimit();
+	}
 
 	for (Dot* d : _items)
 	{
@@ -158,7 +175,6 @@ void QuadTree::DrawBoundries(DotRenderer* dotRenderer)
 		dotRenderer->SetDrawColor(255, 255, 255, 255);
 		dotRenderer->DrawLine(Boundry.Centre.x, Boundry.TopLeft.y, Boundry.Centre.x, Boundry.BottomRight.y);
 		dotRenderer->DrawLine(Boundry.TopLeft.x, Boundry.Centre.y, Boundry.TopRight.x, Boundry.Centre.y);
-
 
 		_northWest->DrawBoundries(dotRenderer);
 		_northEast->DrawBoundries(dotRenderer);
