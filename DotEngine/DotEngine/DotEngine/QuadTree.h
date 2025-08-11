@@ -10,12 +10,17 @@ struct AABB
 public:
 	float Width;
 	float Height;
+	float HalfWidth;
+	float HalfHeight;
 
 	glm::vec2 Centre;
-	glm::vec2 TopLeft = glm::vec2(-1, -1);
-	glm::vec2 TopRight = glm::vec2(1, -1);
-	glm::vec2 BottomLeft = glm::vec2(-1, 1);
-	glm::vec2 BottomRight = glm::vec2(1, 1);
+
+
+
+	//glm::vec2 TopLeft = glm::vec2(-1, -1);
+	//glm::vec2 TopRight = glm::vec2(1, -1);
+	//glm::vec2 BottomLeft = glm::vec2(-1, 1);
+	//glm::vec2 BottomRight = glm::vec2(1, 1);
 
 public:
 	AABB();
@@ -40,6 +45,7 @@ public:
 private:
 	int _capacity = 8;
 	bool _hitLimit = false;
+	bool _hasSplit = false;
 
 	std::vector<Dot*> _items;
 
@@ -59,6 +65,7 @@ public:
 	void DrawBoundries(DotRenderer* dotRenderer);
 
 	void ClearTree();
+	void DestroyTree();
 
 	void SetLimit() { _hitLimit = true; };
 

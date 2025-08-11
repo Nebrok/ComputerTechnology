@@ -11,6 +11,12 @@ DotRenderer::DotRenderer(SDL_Window* window) : m_sdlRenderer(nullptr)
 {
 	m_sdlRenderer = SDL_CreateRenderer(window, nullptr);
 	if (!m_sdlRenderer) return;
+
+
+
+	SDL_Surface* circleSurface = SDL_CreateSurface(64, 64, SDL_PIXELFORMAT_RGBA32);
+
+
 }
 
 DotRenderer::~DotRenderer()

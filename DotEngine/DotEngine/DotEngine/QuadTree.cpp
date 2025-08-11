@@ -5,17 +5,17 @@
 //-------------AABB-----------------
 
 AABB::AABB()
-	: Centre({0,0}), Width(0), Height(0)
+	: Centre({0,0}), Width(0), Height(0), HalfWidth(0), HalfHeight(0)
 {
 }
 
 AABB::AABB(glm::vec2 centre, float width, float height)
-	: Centre(centre), Width(width), Height(height)
+	: Centre(centre), Width(width), Height(height), HalfWidth(Width / 2), HalfHeight(Height / 2)
 {
-	TopLeft = glm::vec2(Centre.x - (Width / 2), Centre.y - (Height / 2));
-	TopRight = glm::vec2(Centre.x + (Width / 2), Centre.y - (Height / 2));
-	BottomLeft = glm::vec2(Centre.x - (Width/2), Centre.y + (Height / 2));
-	BottomRight = glm::vec2(Centre.x + (Width / 2), Centre.y + (Height / 2));
+	//TopLeft = glm::vec2(Centre.x - (Width / 2), Centre.y - (Height / 2));
+	//TopRight = glm::vec2(Centre.x + (Width / 2), Centre.y - (Height / 2));
+	//BottomLeft = glm::vec2(Centre.x - (Width/2), Centre.y + (Height / 2));
+	//BottomRight = glm::vec2(Centre.x + (Width / 2), Centre.y + (Height / 2));
 }
 
 AABB::~AABB()
@@ -45,20 +45,45 @@ glm::vec2 AABB::GetBottomRight()
 bool AABB::Contains(glm::vec2 point)
 {
 	return (
+		point.x > (Centre.x - HalfWidth) and
+		point.x < (Centre.x + HalfWidth) and
+		point.y < (Centre.y + HalfHeight) and
+		point.y > (Centre.y - HalfHeight)
+		);
+
+
+	/*
+	return (
 		point.x > TopLeft.x and
 		point.x < TopRight.x and
 		point.y < BottomRight.y and
 		point.y > TopRight.y
 		);
+		*/
 }
 
 bool AABB::Intersects(AABB& other)
 {
+
+	float dx = other.Centre.x - Centre.x;
+	float px = (other.HalfWidth) + HalfWidth - abs(dx);
+	if (px <= 0)
+		return false;
+
+	float dy = other.Centre.y - Centre.y;
+	float py = (other.HalfHeight) + HalfHeight - abs(dy);
+	if (py <= 0)
+		return false;
+
+	return true;
+
+	/*
 	return (
 		other.TopLeft.x < TopRight.x and
 		other.TopRight.x > TopLeft.x and
 		other.TopLeft.y < BottomRight.y and
 		other.BottomRight.y > TopLeft.y);
+		*/
 }
 
 
@@ -71,7 +96,7 @@ QuadTree::QuadTree(glm::vec2 centre, float width, float height)
 
 QuadTree::~QuadTree()
 {
-	ClearTree();
+	DestroyTree();
 }
 
 bool QuadTree::Insert(Dot* object)
@@ -81,13 +106,13 @@ bool QuadTree::Insert(Dot* object)
 		return false;
 	}
 
-	if (_hitLimit or (_items.size() < _capacity and _northWest == nullptr))
+	if (_hitLimit or (_items.size() < _capacity and !_hasSplit))
 	{
 		_items.push_back(object);
 		return true;
 	}
 
-	if (_northWest == nullptr)
+	if (!_hasSplit)
 	{
 		if (!Subdivide())
 			return false;
@@ -108,25 +133,28 @@ bool QuadTree::Insert(Dot* object)
 
 bool QuadTree::Subdivide()
 {
-	float newWidth = Boundry.Width / 2;
-	float newHeight = Boundry.Height / 2;
-
-	glm::vec2 centreTopLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y - (newHeight / 2));
-	glm::vec2 centreTopRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y - (newHeight / 2));
-	glm::vec2 centreBottomLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
-	glm::vec2 centreBottomRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
-
-	_northWest = new QuadTree(centreTopLeft, newWidth, newHeight);
-	_northEast = new QuadTree(centreTopRight, newWidth, newHeight);
-	_southWest = new QuadTree(centreBottomLeft, newWidth, newHeight);
-	_southEast = new QuadTree(centreBottomRight, newWidth, newHeight);
-	
-	if ((newWidth / 2) < 2 or (newHeight / 2) < 2)
+	if (_northWest == nullptr)
 	{
-		_northWest->SetLimit();
-		_northEast->SetLimit();
-		_southWest->SetLimit();
-		_southEast->SetLimit();
+		float newWidth = Boundry.Width / 2;
+		float newHeight = Boundry.Height / 2;
+
+		glm::vec2 centreTopLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y - (newHeight / 2));
+		glm::vec2 centreTopRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y - (newHeight / 2));
+		glm::vec2 centreBottomLeft = glm::vec2(Boundry.Centre.x - (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
+		glm::vec2 centreBottomRight = glm::vec2(Boundry.Centre.x + (newWidth / 2), Boundry.Centre.y + (newHeight / 2));
+
+		_northWest = new QuadTree(centreTopLeft, newWidth, newHeight);
+		_northEast = new QuadTree(centreTopRight, newWidth, newHeight);
+		_southWest = new QuadTree(centreBottomLeft, newWidth, newHeight);
+		_southEast = new QuadTree(centreBottomRight, newWidth, newHeight);
+
+		if ((newWidth / 2) < 2 or (newHeight / 2) < 2)
+		{
+			_northWest->SetLimit();
+			_northEast->SetLimit();
+			_southWest->SetLimit();
+			_southEast->SetLimit();
+		}
 	}
 
 	for (Dot* d : _items)
@@ -141,6 +169,7 @@ bool QuadTree::Subdivide()
 			continue;
 	}
 
+	_hasSplit = true;
 	return true;
 }
 
@@ -155,7 +184,7 @@ void QuadTree::ContainedBy(AABB& searchArea, std::vector<Dot*>& foundItems)
 			foundItems.push_back(d);
 	}
 
-	if (_northWest == nullptr)
+	if (!_hasSplit)
 		return;
 
 	_northWest->ContainedBy(searchArea, foundItems);
@@ -169,13 +198,11 @@ void QuadTree::ContainedBy(AABB& searchArea, std::vector<Dot*>& foundItems)
 void QuadTree::DrawBoundries(DotRenderer* dotRenderer)
 {
 	dotRenderer->SetDrawColor(255, 255, 255, 255);
-
-	if (_northWest != nullptr)
+	
+	if (_hasSplit)
 	{
-		dotRenderer->SetDrawColor(255, 255, 255, 255);
-		dotRenderer->DrawLine(Boundry.Centre.x, Boundry.TopLeft.y, Boundry.Centre.x, Boundry.BottomRight.y);
-		dotRenderer->DrawLine(Boundry.TopLeft.x, Boundry.Centre.y, Boundry.TopRight.x, Boundry.Centre.y);
-
+		dotRenderer->DrawLine(Boundry.Centre.x, Boundry.Centre.y - (Boundry.HalfHeight), Boundry.Centre.x, Boundry.Centre.y + (Boundry.HalfHeight));
+		dotRenderer->DrawLine(Boundry.Centre.x - (Boundry.HalfWidth), Boundry.Centre.y, Boundry.Centre.x + (Boundry.HalfWidth), Boundry.Centre.y);
 		_northWest->DrawBoundries(dotRenderer);
 		_northEast->DrawBoundries(dotRenderer);
 		_southWest->DrawBoundries(dotRenderer);
@@ -184,6 +211,20 @@ void QuadTree::DrawBoundries(DotRenderer* dotRenderer)
 }
 
 void QuadTree::ClearTree()
+{
+	if (_hasSplit)
+	{
+		_northWest->ClearTree();
+		_northEast->ClearTree();
+		_southWest->ClearTree();
+		_southEast->ClearTree();
+	}
+
+	_hasSplit = false;
+	_items.clear();
+}
+
+void QuadTree::DestroyTree()
 {
 	if (_northWest != nullptr)
 	{
@@ -215,3 +256,4 @@ void QuadTree::ClearTree()
 
 	_items.clear();
 }
+
