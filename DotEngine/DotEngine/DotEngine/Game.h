@@ -1,8 +1,8 @@
 #pragma once
 #include "vector"
 
-static const int SCREEN_WIDTH = 1000;
-static const int SCREEN_HEIGHT = 800;
+static const int SCREEN_WIDTH = 1800;
+static const int SCREEN_HEIGHT = 900;
 
 class DotRenderer;
 class QuadTree;
@@ -14,7 +14,7 @@ public:
 	QuadTree* TheTree;
 	const int SearchWidth = 30;
 
-	const int DotAmount = 2000;
+	const int DotAmount = 5000;
 
 	std::vector<Dot*> dots;
 

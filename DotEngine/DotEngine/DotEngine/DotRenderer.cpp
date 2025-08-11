@@ -7,62 +7,90 @@
 #include "game.h"
 
 
-DotRenderer::DotRenderer(SDL_Window* window) : m_sdlRenderer(nullptr)
+DotRenderer::DotRenderer(SDL_Window* window) : _sdlRenderer(nullptr)
 {
-	m_sdlRenderer = SDL_CreateRenderer(window, nullptr);
-	if (!m_sdlRenderer) return;
+	_sdlRenderer = SDL_CreateRenderer(window, nullptr);
+	if (!_sdlRenderer) return;
 
 
+	int surfaceWidth = 64;
+	int surfaceHeight = 64;
+	SDL_Surface* circleSurface = SDL_CreateSurface(surfaceWidth, surfaceHeight, SDL_PIXELFORMAT_RGBA32);
+	glm::vec2 circleCentre{ surfaceWidth / 2, surfaceHeight / 2 };
+	for (int x = 0; x < surfaceWidth; x++) {
+		for (int y = 0; y < surfaceHeight; y++) 
+		{
+			SetPixel(circleSurface, x, y, 255, 255, 255, 255);
+		}
+	}
+	_circleTexture = SDL_CreateTextureFromSurface(_sdlRenderer, circleSurface);
+}
 
-	SDL_Surface* circleSurface = SDL_CreateSurface(64, 64, SDL_PIXELFORMAT_RGBA32);
+void DotRenderer::SetPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	SDL_LockSurface(surface);
 
+	// surface->format is now an enum SDL_PixelFormat  so we have to to get BytesPerPixel in a different way
+	SDL_PixelFormat format = surface->format;
+	const SDL_PixelFormatDetails* format_details = SDL_GetPixelFormatDetails(format);
 
+	uint8_t* pixelArray = (uint8_t*)surface->pixels;
+	pixelArray[y * surface->pitch + x * format_details->bytes_per_pixel + 0] = r;
+	pixelArray[y * surface->pitch + x * format_details->bytes_per_pixel + 1] = g;
+	pixelArray[y * surface->pitch + x * format_details->bytes_per_pixel + 2] = b;
+	pixelArray[y * surface->pitch + x * format_details->bytes_per_pixel + 3] = a;
+
+	SDL_UnlockSurface(surface);
 }
 
 DotRenderer::~DotRenderer()
 {
-	if (m_sdlRenderer)
+	if (_sdlRenderer)
 	{
-		SDL_DestroyRenderer(m_sdlRenderer);
-		m_sdlRenderer = nullptr;
+		SDL_DestroyRenderer(_sdlRenderer);
+		_sdlRenderer = nullptr;
+	}
+	if (_circleTexture)
+	{
+		SDL_DestroyTexture(_circleTexture);
+		_circleTexture = nullptr;
 	}
 }
 
 void DotRenderer::SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-	if (m_sdlRenderer)
+	if (_sdlRenderer)
 	{
-		SDL_SetRenderDrawColor(m_sdlRenderer, r, g, b, a);
+		SDL_SetRenderDrawColor(_sdlRenderer, r, g, b, a);
 	}
 }
 
 void DotRenderer::Clear()
 {
-	if (m_sdlRenderer)
+	if (_sdlRenderer)
 	{
-		SDL_RenderClear(m_sdlRenderer);
+		SDL_RenderClear(_sdlRenderer);
 	}
 }
 
 void DotRenderer::Present()
 {
-	if (m_sdlRenderer)
+	if (_sdlRenderer)
 	{
-		SDL_RenderPresent(m_sdlRenderer);
+		SDL_RenderPresent(_sdlRenderer);
 	}
 }
 
 void DotRenderer::DrawPoint(int x, int y)
 {
-	if (m_sdlRenderer)
+	if (_sdlRenderer)
 	{
-		SDL_RenderPoint(m_sdlRenderer, x, y);
+		SDL_RenderPoint(_sdlRenderer, x, y);
 	}
 }
 
 void DotRenderer::DrawCircle(int centerX, int centerY, int radius)
 {
-	if (!m_sdlRenderer) return;
+	if (!_sdlRenderer) return;
 
 	int x = radius;
 	int y = 0;
@@ -94,32 +122,37 @@ void DotRenderer::DrawCircle(int centerX, int centerY, int radius)
 
 void DotRenderer::DrawFilledCircle(int centerX, int centerY, int radius, float totalTime)
 {
-	if (!m_sdlRenderer) return;
+	if (!_sdlRenderer) return;
+	
+	SDL_FRect destinationRect{centerX - radius, centerY - radius, radius * 2, radius * 2};
+	RenderTexture(_circleTexture, NULL, &destinationRect);
 
+	return;
+	//Old render stuff below
 	float redColor = (glm::cos((totalTime) * 0.1f + (centerX / SCREEN_WIDTH)) * 0.5f + 0.5f) * 255.0f;
 	float greenColor = (glm::cos((totalTime) * 0.9f + (centerY / SCREEN_HEIGHT)) * 0.5f + 0.5f) * 255.0f;
 	float blueColor = (glm::cos(totalTime * 0.4f) * 0.5f + 0.5f) * 255.0f;
 
-	SetDrawColor(redColor, greenColor, blueColor, 255);
+	SetDrawColor(255, 255, 255, 255);
 
 	for (int y = -radius; y <= radius; y++) 
 	{
 		int x = static_cast<int>(std::sqrt(radius * radius - y * y));
-		SDL_RenderLine(m_sdlRenderer, centerX - x, centerY + y, centerX + x, centerY + y);
+		SDL_RenderLine(_sdlRenderer, centerX - x, centerY + y, centerX + x, centerY + y);
 	}
 }
 
 bool DotRenderer::DrawLine(float startX, float startY, float endX, float endY)
 {
-	if (!m_sdlRenderer) return false;
-	return SDL_RenderLine(m_sdlRenderer, startX, startY, endX, endY);
+	if (!_sdlRenderer) return false;
+	return SDL_RenderLine(_sdlRenderer, startX, startY, endX, endY);
 }
 
 void DotRenderer::RenderTexture(SDL_Texture* texture, const SDL_FRect* srcRect, const SDL_FRect* dstRect)
 {
-	if (m_sdlRenderer && texture)
+	if (_sdlRenderer && texture)
 	{
-		SDL_RenderTexture(m_sdlRenderer, texture, srcRect, dstRect);
+		SDL_RenderTexture(_sdlRenderer, texture, srcRect, dstRect);
 	}
 }
 
