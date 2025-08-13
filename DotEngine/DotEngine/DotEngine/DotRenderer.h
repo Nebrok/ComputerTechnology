@@ -9,6 +9,9 @@ class DotRenderer
 private:
     SDL_Renderer* _sdlRenderer;
     SDL_Texture* _circleTexture;
+    SDL_Texture* _screenTexture;
+
+    std::vector<uint32_t> _pixelBuffer;
 
 
 public:
@@ -24,7 +27,14 @@ public:
 
     void DrawCircle(int centerX, int centerY, int radius);
     void DrawFilledCircle(int centerX, int centerY, int radius, float totalTime);
+    void DrawCircleTexture(int centerX, int centerY, int radius, float totalTime);
     bool DrawLine(float startX, float startY, float endX, float endY);
+
+    void ClearBuffer();
+    void DrawToPixelBuffer(int centerX, int centerY, int radius, int totalTime);
+    void DrawPixelBuffer();
+
+
     void RenderTexture(SDL_Texture* texture, const SDL_FRect* srcRect, const SDL_FRect* dstRect);
 
 private:

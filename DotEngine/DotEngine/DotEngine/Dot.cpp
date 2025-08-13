@@ -56,7 +56,7 @@ void Dot::Update(float dt)
 
 void Dot::Render(DotRenderer* aRenderer, float& totalTime)
 {
-	aRenderer->DrawFilledCircle(Position.x, Position.y, Radius, totalTime);
+	aRenderer->DrawToPixelBuffer(Position.x, Position.y, Radius, totalTime);
 }
 
 void Dot::TakeDamage(int someDamage)

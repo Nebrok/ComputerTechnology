@@ -4,16 +4,20 @@
 #include <cstdlib>
 #include "glm/glm.hpp"
 #include <algorithm>
+#include <future>
+
 
 #include "QuadTree.h"
 
 Game::Game(DotRenderer* aRenderer)
 {
 	renderer = aRenderer;
+	ThreadAmount = std::max(1u, std::thread::hardware_concurrency());
+
 
 	for (size_t i = 0; i < DotAmount; i++)
 	{
-		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 1);
+		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 1.5);
 
 		dots.push_back(d);
 	}
@@ -23,9 +27,9 @@ Game::Game(DotRenderer* aRenderer)
 
 }
 
-void Game::Update(float aDeltaTime)
+void Game::Update(float deltaTime)
 {
-	TotalTime += aDeltaTime;
+	TotalTime += deltaTime;
 
 	//Rebuild the Quad Tree
 	for (Dot* d : dots)
@@ -64,8 +68,8 @@ void Game::Update(float aDeltaTime)
 					d2->Position += normal * overlap;
 					d1->TakeDamage(1);
 					d2->TakeDamage(1);
-					d1->Radius += 1;
-					d2->Radius += 1;
+					d1->Radius += .5f;
+					d2->Radius += .5f;
 					if (d1->Health <= 0)
 					{
 						toDestroy.push_back(d1);
@@ -86,17 +90,47 @@ void Game::Update(float aDeltaTime)
 
 	toDestroy.clear();
 
-	for (Dot* d : dots)
-	{
-		if (d != nullptr)
-		{
-			d->Update(aDeltaTime);
-			d->Render(renderer, TotalTime);
-		}
-	}
+	Render(deltaTime);
+	
 
 	
 	TheTree->ClearTree();
+
+}
+
+void Game::Render(float deltaTime)
+{
+	renderer->ClearBuffer();
+
+	std::vector<std::future<void>> futures;
+	int dotsPerThread = dots.size() / ThreadAmount;
+
+	for (int i = 0; i < ThreadAmount; i++)
+	{
+		int startIndex = i * dotsPerThread;
+		int endIndex = (i == ThreadAmount - 1) ? dots.size() : (i + 1) * dotsPerThread;
+
+		futures.push_back(std::async(std::launch::async, &Game::RenderPartition, this, startIndex, endIndex, deltaTime));
+	}
+
+	for (std::future<void>& f : futures)
+	{
+		f.get();
+	}
+	
+	renderer->DrawPixelBuffer();
+}
+
+void Game::RenderPartition(int startIndex, int endIndex, float deltaTime)
+{
+	for (int i = startIndex; i < endIndex; i++)
+	{
+		if (dots[i] != nullptr)
+		{
+			dots[i]->Update(deltaTime);
+			dots[i]->Render(renderer, TotalTime);
+		}
+	}
 
 }
 

@@ -14,14 +14,19 @@ public:
 	QuadTree* TheTree;
 	const int SearchWidth = 30;
 
-	const int DotAmount = 5000;
+	const int DotAmount = 10000;
+
+	int ThreadAmount = 4;
 
 	std::vector<Dot*> dots;
 
 	float TotalTime = 0;
 
-	Game(DotRenderer* aRenderer);
-	void Update(float aDeltaTime);
+	Game(DotRenderer* renderer);
+	void Update(float deltaTime);
+	void Render(float deltaTime);
+	void RenderPartition(int startIndex, int endIndex, float deltaTime);
+
 	void CleanUp();
 private:
 	DotRenderer* renderer;
