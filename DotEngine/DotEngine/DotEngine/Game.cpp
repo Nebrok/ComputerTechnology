@@ -9,15 +9,15 @@
 
 #include "QuadTree.h"
 
-Game::Game(DotRenderer* aRenderer)
+Game::Game(DotRenderer* renderer)
 {
-	renderer = aRenderer;
+	_renderer = renderer;
 	ThreadAmount = std::max(1u, std::thread::hardware_concurrency());
 
 
 	for (size_t i = 0; i < DotAmount; i++)
 	{
-		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 1.5);
+		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 2.f);
 
 		dots.push_back(d);
 	}
@@ -85,7 +85,8 @@ void Game::Update(float deltaTime)
 
 	for (Dot* d : toDestroy)
 	{
-		d->Reset({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 1);
+		glm::vec2 newPosition = { std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT };
+		d->Reset(newPosition, 3.f);
 	}
 
 	toDestroy.clear();
@@ -100,7 +101,7 @@ void Game::Update(float deltaTime)
 
 void Game::Render(float deltaTime)
 {
-	renderer->ClearBuffer();
+	_renderer->ClearBuffer();
 
 	std::vector<std::future<void>> futures;
 	int dotsPerThread = dots.size() / ThreadAmount;
@@ -118,7 +119,7 @@ void Game::Render(float deltaTime)
 		f.get();
 	}
 	
-	renderer->DrawPixelBuffer();
+	_renderer->DrawPixelBuffer();
 }
 
 void Game::RenderPartition(int startIndex, int endIndex, float deltaTime)
@@ -128,7 +129,7 @@ void Game::RenderPartition(int startIndex, int endIndex, float deltaTime)
 		if (dots[i] != nullptr)
 		{
 			dots[i]->Update(deltaTime);
-			dots[i]->Render(renderer, TotalTime);
+			dots[i]->Render(_renderer, TotalTime);
 		}
 	}
 

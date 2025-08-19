@@ -1,8 +1,8 @@
 #pragma once
 #include "vector"
 
-static const int SCREEN_WIDTH = 1800;
-static const int SCREEN_HEIGHT = 900;
+static const int SCREEN_WIDTH = 1920;
+static const int SCREEN_HEIGHT = 1080;
 
 class DotRenderer;
 class QuadTree;
@@ -29,6 +29,6 @@ public:
 
 	void CleanUp();
 private:
-	DotRenderer* renderer;
+	DotRenderer* _renderer;
 };
 

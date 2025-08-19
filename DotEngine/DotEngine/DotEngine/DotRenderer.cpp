@@ -1,6 +1,7 @@
 #include "DotRenderer.h"
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_pixels.h>
 #include <cmath> 
 
 #include "glm/glm.hpp"
@@ -14,6 +15,7 @@ DotRenderer::DotRenderer(SDL_Window* window) : _sdlRenderer(nullptr)
 
 	_screenTexture = SDL_CreateTexture(_sdlRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 	_pixelBuffer.resize(SCREEN_WIDTH * SCREEN_HEIGHT, 0x00000000);
+	_pixelFormatDetails = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32);
 
 	int surfaceWidth = 64;
 	int surfaceHeight = 64;
@@ -177,7 +179,7 @@ void DotRenderer::ClearBuffer()
 	SDL_RenderClear(_sdlRenderer);
 }
 
-void DotRenderer::DrawToPixelBuffer(int centerX, int centerY, int radius, int totalTime)
+void DotRenderer::DrawToPixelBuffer(int centerX, int centerY, int radius, float totalTime)
 {
 	if (_sdlRenderer == nullptr) return;
 
@@ -186,6 +188,21 @@ void DotRenderer::DrawToPixelBuffer(int centerX, int centerY, int radius, int to
 	int minY = std::max(0, centerY - radius);
 	int maxY = std::min(SCREEN_HEIGHT, centerY + radius);
 
+	
+
+	double colourDist = sqrt((centerX - HALF_WIDTH) * (centerX - HALF_WIDTH) + (centerY - HALF_HEIGHT) * (centerY - HALF_HEIGHT));
+
+	float redColor = glm::cos((colourDist + totalTime) / ((int)totalTime % 100)) * 0.1f * 255.0f;
+	float greenColor = glm::cos((colourDist + totalTime) / 100) * 0.9f * 255.0f;
+	float blueColor = (glm::cos(totalTime * 0.4f) * 0.5f + 0.5f) * 255.0f;
+
+	/*
+	float redColor = (glm::cos((totalTime) * 0.1f + (centerX / SCREEN_WIDTH)) * 0.5f + 0.5f) * 255.0f;
+	float greenColor = (glm::cos((totalTime) * 0.9f + (centerY / SCREEN_HEIGHT)) * 0.5f + 0.5f) * 255.0f;
+	float blueColor = (glm::cos(totalTime * 0.4f) * 0.5f + 0.5f) * 255.0f;
+	*/
+
+	Uint32 colour = SDL_MapRGBA(_pixelFormatDetails, NULL, redColor, greenColor, blueColor, 255.f);
 
 	for (int y = minY; y < maxY; y++)
 	{
@@ -193,12 +210,12 @@ void DotRenderer::DrawToPixelBuffer(int centerX, int centerY, int radius, int to
 		{
 			int dx = x - centerX;
 			int dy = y - centerY;
-			int distSq = dx * dx + dy * dy;
+			double dist = (dx * dx + dy * dy);
 
-			if (distSq < radius * radius)
+			if (dist <= radius * radius)
 			{
 				int index = y * SCREEN_WIDTH + x;
-				_pixelBuffer[index] = 0xFFFFFFFF;
+				_pixelBuffer[index] = colour;
 			}
 		}
 	}

@@ -15,13 +15,6 @@ public:
 
 	glm::vec2 Centre;
 
-
-
-	//glm::vec2 TopLeft = glm::vec2(-1, -1);
-	//glm::vec2 TopRight = glm::vec2(1, -1);
-	//glm::vec2 BottomLeft = glm::vec2(-1, 1);
-	//glm::vec2 BottomRight = glm::vec2(1, 1);
-
 public:
 	AABB();
 	AABB(glm::vec2 centre, float width, float height);
@@ -55,7 +48,7 @@ private:
 	QuadTree* _southEast = nullptr;
 
 public:
-	QuadTree(glm::vec2 centre, float width, float height);
+	QuadTree(glm::vec2& centre, float width, float height);
 	~QuadTree();
 
 	bool Insert(Dot* object);

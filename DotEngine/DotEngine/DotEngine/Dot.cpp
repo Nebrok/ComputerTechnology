@@ -11,7 +11,7 @@ Dot::Dot(glm::vec2 newPosition, float newRadius)
 	Reset(newPosition, newRadius);
 }
 
-void Dot::Reset(glm::vec2 newPosition, float newRadius)
+void Dot::Reset(glm::vec2& newPosition, float newRadius)
 {
 	Position = newPosition;
 	Radius = newRadius;
@@ -27,9 +27,9 @@ void Dot::Reset(glm::vec2 newPosition, float newRadius)
 	Health = 3;
 }
 
-void Dot::Update(float dt)
+void Dot::Update(float deltaTime)
 {
-	Position += Velocity * DotVelocity * dt;
+	Position += Velocity * DotVelocity * deltaTime;
 
 	if (Position.x - Radius < 0.0f)
 	{
@@ -54,14 +54,14 @@ void Dot::Update(float dt)
 	}
 }
 
-void Dot::Render(DotRenderer* aRenderer, float& totalTime)
+void Dot::Render(DotRenderer* renderer, float& totalTime)
 {
-	aRenderer->DrawToPixelBuffer(Position.x, Position.y, Radius, totalTime);
+	renderer->DrawToPixelBuffer(Position.x, Position.y, Radius, totalTime);
 }
 
-void Dot::TakeDamage(int someDamage)
+void Dot::TakeDamage(const int damage)
 {
-	Health -= someDamage;
+	Health -= damage;
 }
 
 

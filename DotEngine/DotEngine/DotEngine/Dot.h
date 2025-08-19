@@ -15,9 +15,9 @@ public:
 	Dot(glm::vec2 aPosition, float aRadius);
 
 	void Update(float dt);
-	void Render(DotRenderer* aRenderer, float& totalTime);
-	void TakeDamage(int someDamage);
-	void Reset(glm::vec2 newPosition, float newRadius);
+	void Render(DotRenderer* renderer, float& totalTime);
+	void TakeDamage(const int damage);
+	void Reset(glm::vec2& newPosition, float radius);
 
 
 };

@@ -89,7 +89,7 @@ bool AABB::Intersects(AABB& other)
 
 //-------------QuadTree-------------
 
-QuadTree::QuadTree(glm::vec2 centre, float width, float height)
+QuadTree::QuadTree(glm::vec2& centre, float width, float height)
 {
 	Boundry = AABB(centre, width, height);
 }
