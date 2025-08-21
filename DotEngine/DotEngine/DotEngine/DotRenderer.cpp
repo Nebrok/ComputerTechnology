@@ -188,11 +188,9 @@ void DotRenderer::DrawToPixelBuffer(int centerX, int centerY, int radius, float 
 	int minY = std::max(0, centerY - radius);
 	int maxY = std::min(SCREEN_HEIGHT, centerY + radius);
 
-	
-
 	double colourDist = sqrt((centerX - HALF_WIDTH) * (centerX - HALF_WIDTH) + (centerY - HALF_HEIGHT) * (centerY - HALF_HEIGHT));
 
-	float redColor = glm::cos((colourDist + totalTime) / ((int)totalTime % 100)) * 0.1f * 255.0f;
+	float redColor = glm::cos((colourDist + totalTime) / 100) * 0.1f * 255.0f;
 	float greenColor = glm::cos((colourDist + totalTime) / 100) * 0.9f * 255.0f;
 	float blueColor = (glm::cos(totalTime * 0.4f) * 0.5f + 0.5f) * 255.0f;
 

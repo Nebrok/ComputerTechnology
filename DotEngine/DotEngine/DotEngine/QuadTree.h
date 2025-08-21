@@ -36,7 +36,7 @@ public:
 	AABB Boundry;
 
 private:
-	int _capacity = 8;
+	int _capacity = 4;
 	bool _hitLimit = false;
 	bool _hasSplit = false;
 

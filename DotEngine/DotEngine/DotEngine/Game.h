@@ -10,10 +10,13 @@ class Dot;
 
 class Game
 {
+private:
+	DotRenderer* _renderer;
+	const float _dotRadius = 1.5f;
+
 public:
 	QuadTree* TheTree;
-	const int SearchWidth = 30;
-
+	const int SearchWidth = 10;
 	const int DotAmount = 10000;
 
 	int ThreadAmount = 4;
@@ -28,7 +31,5 @@ public:
 	void RenderPartition(int startIndex, int endIndex, float deltaTime);
 
 	void CleanUp();
-private:
-	DotRenderer* _renderer;
 };
 

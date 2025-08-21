@@ -17,7 +17,7 @@ Game::Game(DotRenderer* renderer)
 
 	for (size_t i = 0; i < DotAmount; i++)
 	{
-		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, 2.f);
+		Dot* d = new Dot({ std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT }, _dotRadius);
 
 		dots.push_back(d);
 	}
@@ -51,7 +51,7 @@ void Game::Update(float deltaTime)
 
 		for (Dot* d2 : surrounding)
 		{
-			if (d1 != d2)// && d1 != nullptr && d2 != nullptr)
+			if (d1 != d2)
 			{
 				float dist = glm::distance(d1->Position, d2->Position);
 				float minDist = d1->Radius + d2->Radius;
@@ -71,13 +71,9 @@ void Game::Update(float deltaTime)
 					d1->Radius += .5f;
 					d2->Radius += .5f;
 					if (d1->Health <= 0)
-					{
 						toDestroy.push_back(d1);
-					}
 					if (d2->Health <= 0)
-					{
 						toDestroy.push_back(d2);
-					}
 				}
 			}
 		}
@@ -86,7 +82,7 @@ void Game::Update(float deltaTime)
 	for (Dot* d : toDestroy)
 	{
 		glm::vec2 newPosition = { std::rand() % SCREEN_WIDTH, std::rand() % SCREEN_HEIGHT };
-		d->Reset(newPosition, 3.f);
+		d->Reset(newPosition, _dotRadius);
 	}
 
 	toDestroy.clear();
